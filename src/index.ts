@@ -6,7 +6,8 @@ type Reference =
   | readonly [Validator]
   | [Validator]
   | Validator
-type Validator = { [key: string]: Reference }
+
+export type Validator = { [key: string]: Reference }
 
 type FromPrimitve<T extends Primitive> = T extends 'string'
   ? string
@@ -76,19 +77,19 @@ export function validateBody<T extends Validator>(
     }
 
     if (value === undefined) {
-      if (!opts.partial) errors.push(`${prop} is undefined`)
+      if (!opts.partial) errors.push(`.${prop} is undefined`)
       continue
     }
 
     if (isPrimitive(bodyType) && typeof value !== bodyType) {
-      errors.push(`${prop} is ${typeof value}, expected ${bodyType}`)
+      errors.push(`.${prop} is ${typeof value}, expected ${bodyType}`)
       continue
     }
 
     if (isTuplePrimitive(bodyType)) {
       const [innerType] = bodyType
       if (!Array.isArray(value)) {
-        errors.push(`${prop} is ${typeof value}, expected Array<${innerType}>`)
+        errors.push(`.${prop} is ${typeof value}, expected Array<${innerType}>`)
         continue start
       }
 
@@ -97,19 +98,24 @@ export function validateBody<T extends Validator>(
 
         // We will exit on the first mismatch
         // We could report all distinct erronous types?
-        errors.push(`${prop} element contains ${typeof tupleValue}, expected ${innerType}`)
+        errors.push(`.${prop} element contains ${typeof tupleValue}, expected ${innerType}`)
         continue start
       }
     }
 
     if (isTupleBody(bodyType)) {
       if (!Array.isArray(value)) {
-        errors.push(`${prop} is ${typeof value}, expected Array`)
+        errors.push(`.${prop} is ${typeof value}, expected Array`)
         continue start
       }
 
       const [innerBody] = bodyType
       for (const tupleValue of value) {
+        if (typeof tupleValue !== 'object') {
+          errors.push(`.${prop} element contains ${typeof tupleValue}, expected object`)
+          continue start
+        }
+
         const innerErrors = validateBody(innerBody, tupleValue, {
           prefix: prop,
           notThrow: true,

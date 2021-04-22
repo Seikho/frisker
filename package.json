@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha dist/**/*.spec.js",
     "build": "tsc -p tsconfig.json",
     "prepublishOnly": "rimraf dist && yarn build"
   },
@@ -28,6 +28,10 @@
   },
   "homepage": "https://github.com/seikho/frisker#readme",
   "devDependencies": {
+    "@types/chai": "^4.2.16",
+    "@types/mocha": "^8.2.2",
+    "chai": "^4.3.4",
+    "mocha": "^8.3.2",
     "rimraf": "^3.0.2",
     "typescript": "^4.2.4"
   },
@@ -36,6 +40,8 @@
     "src/**",
     "tsconfig.json",
     "README.md",
-    "package.json"
+    "package.json",
+    "!dist/**/*.spec.js",
+    "!src/**/*.spec.ts"
   ]
 }
