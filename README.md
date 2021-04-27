@@ -35,6 +35,9 @@ Objects are comprised the values:
   - `[Primitive] | [Object]`
 - Objects containing all of the previous types of values
 - `{ [key: string]: Primtive | [Primitive] | [Object] | Object }`
+- A tuple of string literals represents a string literal
+  - `[...string[]]`
+  - E.g. `['user', 'guest', 'admin']`
 
 This is a fairly shallow example using all of the available "types"
 
@@ -42,6 +45,7 @@ This is a fairly shallow example using all of the available "types"
 export const user = {
   id: 'string',
   name: { first: 'string', last: 'string', alias: 'string' },
+  union: ['admin', 'user', 'guest'],
   age: 'number',
   isAdmin: 'boolean',
   permissions: ['string'],
