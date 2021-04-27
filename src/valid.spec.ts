@@ -23,6 +23,10 @@ const arrays = {
   objects: [simple],
 } as const
 
+const literal = {
+  kind: ['a', 'b', 'c'],
+} as const
+
 type Test = {
   it: string
   using: Validator
@@ -109,6 +113,41 @@ const tests: Test[] = [
     input: { objects: [{ astring: 'a', anumber: 1, aboolean: true }, 'foo'] },
     expect: false,
   },
+  {
+    ...toliteral('invalidate literal when value is number'),
+    input: { kind: 42 },
+    expect: false,
+  },
+  {
+    ...toliteral('invalidate literal when value is boolean'),
+    input: { kind: true },
+    expect: false,
+  },
+  {
+    ...toliteral('invalidate literal when value is array'),
+    input: { kind: ['value'] },
+    expect: false,
+  },
+  {
+    ...toliteral('invalidate literal when value is object'),
+    input: { kind: { value: '42' } },
+    expect: false,
+  },
+  {
+    ...toliteral('invalidate literal when string value is not in union'),
+    input: { kind: 'd' },
+    expect: false,
+  },
+  {
+    ...toliteral('validate literal when string value is in union'),
+    input: { kind: 'a' },
+    expect: true,
+  },
+  {
+    ...toliteral('validate literal when string value last member of union'),
+    input: { kind: 'c' },
+    expect: true,
+  },
 ]
 
 describe('validation tests', () => {
@@ -143,5 +182,13 @@ function toarray(msg: string) {
     it: msg,
     using: arrays,
     partial: true,
+  }
+}
+
+function toliteral(msg: string) {
+  return {
+    it: msg,
+    using: literal,
+    partial: false,
   }
 }

@@ -1,3 +1,11 @@
+type FromTupleLiteral<T> = T extends [...infer U] | readonly [...infer U]
+  ? U extends Primitive
+    ? never
+    : T[number] extends string
+    ? T[number]
+    : never
+  : never
+
 type Primitive = 'string' | 'number' | 'boolean'
 type Reference =
   | Primitive
@@ -6,6 +14,8 @@ type Reference =
   | readonly [Validator]
   | [Validator]
   | Validator
+  | [...string[]]
+  | readonly [...string[]]
 
 export type Validator = { [key: string]: Reference }
 
@@ -42,7 +52,7 @@ export type UnwrapBody<T extends { [key: string]: Reference }> = {
     ? FromTupleBody<T[key]>
     : T[key] extends Validator
     ? UnwrapBody<T[key]>
-    : never
+    : FromTupleLiteral<T[key]>
 }
 
 export function isValid<T extends Validator>(type: T, compare: any): compare is UnwrapBody<T> {
@@ -125,6 +135,22 @@ export function validateBody<T extends Validator>(
         errors.push(...innerErrors)
         continue start
       }
+
+      continue
+    }
+
+    if (isUnion(bodyType)) {
+      if (typeof value !== 'string') {
+        errors.push(`.${prop} is ${typeof value}, expected literal of ${bodyType.join(' | ')}`)
+        continue start
+      }
+
+      if (bodyType.includes(value) === false) {
+        errors.push(`.${prop} value is invalid, expected literal of ${bodyType.join(' | ')}`)
+        continue start
+      }
+
+      continue
     }
 
     if (typeof bodyType === 'object') {
@@ -139,6 +165,7 @@ export function validateBody<T extends Validator>(
         notThrow: true,
       })
       errors.push(...innerErrors)
+      continue
     }
   }
 
@@ -150,15 +177,28 @@ export function validateBody<T extends Validator>(
 }
 
 function isPrimitive(value: any): value is Primitive {
-  return typeof value === 'string'
+  return (
+    typeof value === 'string' && (value === 'string' || value === 'boolean' || value === 'number')
+  )
 }
 
 function isTuplePrimitive(value: any): value is [Primitive] {
   if (Array.isArray(value) === false) return false
-  return typeof value[0] === 'string'
+  if (value.length !== 1) return false
+  if (!isPrimitive(value[0])) return false
+  return true
 }
 
 function isTupleBody(value: any): value is [Validator] | readonly [Validator] {
   if (Array.isArray(value) === false) return false
+  if (value.length !== 1) return false
   return typeof value[0] === 'object'
+}
+
+function isUnion<T extends string>(value: any): value is [T] {
+  if (Array.isArray(value) === false) return false
+  if (value.length < 1) return false
+  if (isPrimitive(value[0])) return false
+
+  return true
 }
