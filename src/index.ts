@@ -60,10 +60,18 @@ export function isValid<T extends Validator>(type: T, compare: any): compare is 
   return errors.length === 0
 }
 
-export function isValidPartial<T extends Validator>(
+export function assertValid<T extends Validator>(
   type: T,
-  compare: any
-): compare is Partial<UnwrapBody<T>> {
+  compare: any,
+  partial?: boolean
+): asserts compare is UnwrapBody<T> {
+  const errors = validateBody(type, compare, { notThrow: true, partial })
+  if (errors.length) {
+    throw new Error(`Request body is invalid: ${errors.join(', ')}`)
+  }
+}
+
+export function isValidPartial<T extends Validator>(type: T, compare: any): compare is Partial<UnwrapBody<T>> {
   const errors = validateBody(type, compare, { notThrow: true, partial: true })
   return errors.length === 0
 }
@@ -177,9 +185,7 @@ export function validateBody<T extends Validator>(
 }
 
 function isPrimitive(value: any): value is Primitive {
-  return (
-    typeof value === 'string' && (value === 'string' || value === 'boolean' || value === 'number')
-  )
+  return typeof value === 'string' && (value === 'string' || value === 'boolean' || value === 'number')
 }
 
 function isTuplePrimitive(value: any): value is [Primitive] {
