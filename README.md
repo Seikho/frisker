@@ -89,7 +89,8 @@ export function ({ body }: Request, res: Response) {
 function assertValid(type: Validator, input: any, partial?: boolean)
 ```
 
-When combined with an error handling middleware, the assertion helper can reduce boilerplate:
+The `assertValid` function will throw if the input does not conform to the validator.  
+When combined with an error handling middleware, the assertion helper can reduce boilerplate as seen in earlier examples:
 
 ```ts
 import { RequestHandler } from 'express'
