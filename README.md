@@ -83,6 +83,41 @@ export function ({ body }: Request, res: Response) {
 }
 ```
 
+### Type Assertion
+
+```ts
+function assertValid(type: Validator, input: any, partial?: boolean)
+```
+
+When combined with an error handling middleware, the assertion helper can reduce boilerplate:
+
+```ts
+import { RequestHandler } from 'express'
+import { assertValid } from 'frisker'
+
+/**
+ * A helper for passing errors to the error middleware
+ */
+function wrap(handler: RequestHandler) {
+  const wrapped: RequestHandler = async (req, res, next) => {
+    try { await handler(req, res, next) }
+    catch (ex) { next(ex) }
+  }
+
+  return wrapped
+}
+
+const body = { username: 'string', password: 'string' } as const
+
+export const register = wrap((req, res) => {
+  assertValid(body, req.body)
+
+  // The req.body object will now be the type you expect and be safe to use
+  await createAccount(req.body.username, req.body.password)
+  res.json({ true })
+})
+```
+
 ### Partial Type Guard
 
 ```ts
