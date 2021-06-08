@@ -31,8 +31,15 @@ Objects are comprised the values:
   - `'string'`
   - `'number'`
   - `'boolean'`
+- Optional Primitives
+  - `'string?'`
+  - `'number?'`
+  - `'boolean?'`
 - A single element tuple with a primitive or an object which represents an array
   - `[Primitive] | [Object]`
+- An optional array of primitives
+  - `[OptionalPrimitive]`
+  - I.e. `['string?'] | ['number?'] | ['boolean?']`
 - Objects containing all of the previous types of values
 - `{ [key: string]: Primtive | [Primitive] | [Object] | Object }`
 - A tuple of string literals represents a string literal
@@ -50,6 +57,8 @@ export const user = {
   isAdmin: 'boolean',
   permissions: ['string'],
   groups: [{ id: 'string', name: 'string' }],
+  alias: 'string?', // Optional string
+  previousAliases: ['string?'], // Optional array
 } as const
 
 export type User = UnwrapBody<typeof user>
