@@ -27,6 +27,18 @@ const literal = {
   kind: ['a', 'b', 'c'],
 } as const
 
+const optionals = {
+  str: 'string?',
+  num: 'number?',
+  bool: 'boolean?',
+} as const
+
+const optarrays = {
+  str: ['string?'],
+  num: ['number?'],
+  bool: ['boolean?'],
+}
+
 type Test = {
   it: string
   using: Validator
@@ -148,6 +160,61 @@ const tests: Test[] = [
     input: { kind: 'c' },
     expect: true,
   },
+  {
+    ...toOptional('validate optional primitives with values'),
+    input: { str: 'value', num: 42, bool: true },
+    expect: true,
+  },
+  {
+    ...toOptional('invalidate optional string with incorrect type'),
+    input: { str: 42 },
+    expect: false,
+  },
+  {
+    ...toOptional('invalidate optional number with incorrect type'),
+    input: { num: '42' },
+    expect: false,
+  },
+  {
+    ...toOptional('invalidate optional boolean with incorrect type'),
+    input: { bool: 'true' },
+    expect: false,
+  },
+  {
+    ...toOptional('invalidate optional primitive with null as value'),
+    input: { str: null },
+    expect: false,
+  },
+  {
+    ...toOptional('validate optional primitives when undefined'),
+    input: { str: undefined, num: undefined, bool: undefined },
+    expect: true,
+  },
+  {
+    ...toOptArray('validate optional arary with values'),
+    input: { str: ['abc', 'def'], num: [1, 2, 3], bool: [true, false] },
+    expect: true,
+  },
+  {
+    ...toOptArray('validate optional arary when undefined'),
+    input: { str: undefined, num: undefined, bool: undefined },
+    expect: true,
+  },
+  {
+    ...toOptArray('invalidate optional string arary with incorrect element types'),
+    input: { str: ['abc', 42] },
+    expect: false,
+  },
+  {
+    ...toOptArray('invalidate optional number arary with incorrect element types'),
+    input: { num: [1, 2, 3, 4, '42'] },
+    expect: false,
+  },
+  {
+    ...toOptArray('invalidate optional boolean arary with incorrect element types'),
+    input: { bool: [true, false, 'true'] },
+    expect: false,
+  },
 ]
 
 describe('validation tests', () => {
@@ -155,14 +222,10 @@ describe('validation tests', () => {
   for (const test of tests) {
     count++
     it(`#${count}. will ${test.it}`, () => {
-      const actual = test.partial
-        ? isValidPartial(test.using, test.input)
-        : isValid(test.using, test.input)
+      const actual = test.partial ? isValidPartial(test.using, test.input) : isValid(test.using, test.input)
       let msg = ''
       if (actual !== test.expect) {
-        msg = validateBody(test.using, test.input, { notThrow: true, partial: test.partial }).join(
-          ', '
-        )
+        msg = validateBody(test.using, test.input, { notThrow: true, partial: test.partial }).join(', ')
       }
       expect(actual, msg).to.equal(test.expect ?? true)
     })
@@ -177,11 +240,26 @@ function tosimple(msg: string) {
   }
 }
 
+function toOptional(msg: string) {
+  return {
+    it: msg,
+    using: optionals,
+  }
+}
+
 function toarray(msg: string) {
   return {
     it: msg,
     using: arrays,
     partial: true,
+  }
+}
+
+function toOptArray(msg: string) {
+  return {
+    it: msg,
+    using: optarrays,
+    partial: false,
   }
 }
 

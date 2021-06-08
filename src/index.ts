@@ -1,59 +1,6 @@
-type FromTupleLiteral<T> = T extends [...infer U] | readonly [...infer U]
-  ? U extends Primitive
-    ? never
-    : T[number] extends string
-    ? T[number]
-    : never
-  : never
+import { OptionalPrimitive, Primitive, UnwrapBody, Validator } from './types'
 
-type Primitive = 'string' | 'number' | 'boolean'
-type Reference =
-  | Primitive
-  | readonly [Primitive]
-  | [Primitive]
-  | readonly [Validator]
-  | [Validator]
-  | Validator
-  | [...string[]]
-  | readonly [...string[]]
-
-export type Validator = { [key: string]: Reference }
-
-type FromPrimitve<T extends Primitive> = T extends 'string'
-  ? string
-  : T extends 'boolean'
-  ? boolean
-  : T extends 'number'
-  ? number
-  : never
-
-type FromTuple<T> = T extends [infer U] | readonly [infer U]
-  ? U extends Primitive
-    ? Array<FromPrimitve<U>>
-    : never
-  : never
-
-type FromTupleBody<T> = T extends [infer U]
-  ? U extends Validator
-    ? Array<UnwrapBody<U>>
-    : never
-  : T extends readonly [infer U]
-  ? U extends Validator
-    ? Array<UnwrapBody<U>>
-    : never
-  : never
-
-export type UnwrapBody<T extends { [key: string]: Reference }> = {
-  -readonly [key in keyof T]: T[key] extends Primitive
-    ? FromPrimitve<T[key]>
-    : T[key] extends [Primitive] | readonly [Primitive]
-    ? FromTuple<T[key]>
-    : T[key] extends [Validator] | readonly [Validator]
-    ? FromTupleBody<T[key]>
-    : T[key] extends Validator
-    ? UnwrapBody<T[key]>
-    : FromTupleLiteral<T[key]>
-}
+export { Validator, UnwrapBody }
 
 export function isValid<T extends Validator>(type: T, compare: any): compare is UnwrapBody<T> {
   const errors = validateBody(type, compare, { notThrow: true })
@@ -95,12 +42,23 @@ export function validateBody<T extends Validator>(
     }
 
     if (value === undefined) {
+      if (isOptionalPrimitive(bodyType)) continue
+      if (isTupleOptional(bodyType)) continue
       if (!opts.partial) errors.push(`.${prop} is undefined`)
       continue
     }
 
     if (isPrimitive(bodyType) && typeof value !== bodyType) {
       errors.push(`.${prop} is ${typeof value}, expected ${bodyType}`)
+      continue
+    }
+
+    if (isOptionalPrimitive(bodyType)) {
+      // We have already checked this, but harmless to check again
+      if (value === undefined) continue
+
+      const actual = bodyType.slice(0, -1)
+      if (typeof value !== actual) errors.push(`.${prop} is ${typeof value}, expected ${actual} or undefined`)
       continue
     }
 
@@ -119,6 +77,28 @@ export function validateBody<T extends Validator>(
         errors.push(`.${prop} element contains ${typeof tupleValue}, expected ${innerType}`)
         continue start
       }
+    }
+
+    if (isTupleOptional(bodyType)) {
+      if (value === undefined) continue
+
+      const [innerType] = bodyType
+      const actual = innerType.slice(0, -1)
+
+      if (!Array.isArray(value)) {
+        errors.push(`.${prop} is ${typeof value}, expected Array<${actual}> or undefined`)
+        continue start
+      }
+
+      for (const tupleValue of value) {
+        if (typeof tupleValue === actual) continue
+
+        // We will exit on the first mismatch
+        // We could report all distinct erronous types?
+        errors.push(`.${prop} element contains ${typeof tupleValue}, expected ${actual}`)
+        continue start
+      }
+      continue
     }
 
     if (isTupleBody(bodyType)) {
@@ -188,10 +168,21 @@ function isPrimitive(value: any): value is Primitive {
   return typeof value === 'string' && (value === 'string' || value === 'boolean' || value === 'number')
 }
 
+function isOptionalPrimitive(value: any): value is OptionalPrimitive {
+  return value === 'string?' || value === 'boolean?' || value === 'number?'
+}
+
 function isTuplePrimitive(value: any): value is [Primitive] {
   if (Array.isArray(value) === false) return false
   if (value.length !== 1) return false
   if (!isPrimitive(value[0])) return false
+  return true
+}
+
+function isTupleOptional(value: any): value is [OptionalPrimitive] {
+  if (Array.isArray(value) === false) return false
+  if (value.length !== 1) return false
+  if (!isOptionalPrimitive(value[0])) return false
   return true
 }
 
