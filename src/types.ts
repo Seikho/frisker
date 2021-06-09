@@ -82,12 +82,3 @@ export type UnwrapBody<T extends { [key: string]: Reference }> = {
     ? UnwrapBody<T[key]>
     : FromTupleLiteral<T[key]>
 }
-
-const foo = {
-  a: ['string?'],
-  b: 'string?',
-} as const
-
-type Foo = UnwrapBody<typeof foo>
-
-declare const obj: Foo
