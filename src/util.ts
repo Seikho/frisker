@@ -30,7 +30,7 @@ export function isTupleBody(value: any): value is [Validator] | readonly [Valida
   return typeof value[0] === 'object'
 }
 
-export function isUnion<T extends string>(value: any): value is [T] {
+export function isUnion<T extends string>(value: any): value is [T] | string[] | readonly string[] {
   if (Array.isArray(value) === false) return false
   if (value.length < 1) return false
   if (isPrimitive(value[0])) return false
