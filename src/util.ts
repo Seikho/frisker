@@ -10,14 +10,16 @@ export function isOptionalPrimitive(value: any): value is OptionalPrimitive {
   return value === 'string?' || value === 'boolean?' || value === 'number?'
 }
 
-export function isTuplePrimitive(value: any): value is [Primitive] {
+export function isTuplePrimitive(value: any): value is [Primitive] | readonly [Primitive] {
   if (Array.isArray(value) === false) return false
   if (value.length !== 1) return false
   if (!isPrimitive(value[0])) return false
   return true
 }
 
-export function isTupleOptional(value: any): value is [OptionalPrimitive] {
+export function isTupleOptional(
+  value: any
+): value is [OptionalPrimitive] | readonly [OptionalPrimitive] {
   if (Array.isArray(value) === false) return false
   if (value.length !== 1) return false
   if (!isOptionalPrimitive(value[0])) return false
