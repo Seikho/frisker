@@ -43,5 +43,8 @@
     "package.json",
     "!dist/**/*.spec.js",
     "!src/**/*.spec.ts"
-  ]
+  ],
+  "dependencies": {
+    "@types/node": "^15.12.2"
+  }
 }

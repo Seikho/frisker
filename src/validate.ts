@@ -87,6 +87,7 @@ export function validateBody<T extends Validator>(
         errors.push(`.${prop} element contains ${typeof tupleValue}, expected ${innerType}`)
         continue start
       }
+      continue
     }
 
     if (isTupleOptional(bodyType)) {

@@ -49,6 +49,17 @@ type Test = {
 
 const tests: Test[] = [
   {
+    it: 'will validate empty and non-empty required arrays',
+    using: { one: ['string'], two: ['string'], three: ['string'] },
+    input: {
+      one: ['one'],
+      two: [],
+      three: ['three'],
+    },
+    partial: false,
+    expect: true,
+  },
+  {
     it: 'validate a simple object with each primitive',
     using: simple,
     input: { astring: 'a', anumber: 42, aboolean: true },
@@ -124,6 +135,11 @@ const tests: Test[] = [
     ...toarray('invalidate object array containing strings'),
     input: { objects: [{ astring: 'a', anumber: 1, aboolean: true }, 'foo'] },
     expect: false,
+  },
+  {
+    ...toarray('validate arrays with no elements'),
+    input: { strings: [], numbers: [], booleans: [], objects: [] },
+    expect: true,
   },
   {
     ...toliteral('invalidate literal when value is number'),
@@ -222,10 +238,14 @@ describe('validation tests', () => {
   for (const test of tests) {
     count++
     it(`#${count}. will ${test.it}`, () => {
-      const actual = test.partial ? isValidPartial(test.using, test.input) : isValid(test.using, test.input)
+      const actual = test.partial
+        ? isValidPartial(test.using, test.input)
+        : isValid(test.using, test.input)
       let msg = ''
       if (actual !== test.expect) {
-        msg = validateBody(test.using, test.input, { notThrow: true, partial: test.partial }).join(', ')
+        msg = validateBody(test.using, test.input, { notThrow: true, partial: test.partial }).join(
+          ', '
+        )
       }
       expect(actual, msg).to.equal(test.expect ?? true)
     })
