@@ -1,12 +1,5 @@
 import { UnwrapBody, Validator } from './types'
-import {
-  isOptionalPrimitive,
-  isPrimitive,
-  isTupleBody,
-  isTupleOptional,
-  isTuplePrimitive,
-  isUnion,
-} from './util'
+import { isOptionalPrimitive, isPrimitive, isTupleBody, isTupleOptional, isTuplePrimitive, isUnion } from './util'
 
 export function isValid<T extends Validator>(type: T, compare: any): compare is UnwrapBody<T> {
   const errors = validateBody(type, compare, { notThrow: true })
@@ -24,10 +17,7 @@ export function assertValid<T extends Validator>(
   }
 }
 
-export function isValidPartial<T extends Validator>(
-  type: T,
-  compare: any
-): compare is Partial<UnwrapBody<T>> {
+export function isValidPartial<T extends Validator>(type: T, compare: any): compare is Partial<UnwrapBody<T>> {
   const errors = validateBody(type, compare, { notThrow: true, partial: true })
   return errors.length === 0
 }
@@ -46,7 +36,7 @@ export function validateBody<T extends Validator>(
     let value
     try {
       value = compare[key]
-    } catch (ex) {
+    } catch (ex: any) {
       throw new Error(`${ex.message}: ${prop}`)
     }
 
@@ -67,8 +57,7 @@ export function validateBody<T extends Validator>(
       if (value === undefined) continue
 
       const actual = bodyType.slice(0, -1)
-      if (typeof value !== actual)
-        errors.push(`.${prop} is ${typeof value}, expected ${actual} or undefined`)
+      if (typeof value !== actual) errors.push(`.${prop} is ${typeof value}, expected ${actual} or undefined`)
       continue
     }
 
