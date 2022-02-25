@@ -7,7 +7,7 @@
   "scripts": {
     "test": "mocha dist/**/*.spec.js",
     "build": "tsc -p tsconfig.json",
-    "prepublishOnly": "rimraf dist && yarn build"
+    "prepublishOnly": "rimraf dist && yarn build && yarn test"
   },
   "repository": {
     "type": "git",
