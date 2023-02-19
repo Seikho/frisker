@@ -2,12 +2,23 @@ import { OptionalPrimitive, Primitive, Validator } from './types'
 
 export function isPrimitive(value: any): value is Primitive {
   return (
-    typeof value === 'string' && (value === 'string' || value === 'boolean' || value === 'number')
+    typeof value === 'string' &&
+    (value === 'string' ||
+      value === 'boolean' ||
+      value === 'number' ||
+      value === 'any' ||
+      value === 'unknown')
   )
 }
 
 export function isOptionalPrimitive(value: any): value is OptionalPrimitive {
-  return value === 'string?' || value === 'boolean?' || value === 'number?'
+  return (
+    value === 'string?' ||
+    value === 'boolean?' ||
+    value === 'number?' ||
+    value === 'any?' ||
+    value === 'unknown?'
+  )
 }
 
 export function isTuplePrimitive(value: any): value is [Primitive] | readonly [Primitive] {

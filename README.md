@@ -31,10 +31,14 @@ Objects are comprised the values:
   - `'string'`
   - `'number'`
   - `'boolean'`
+  - `'any'`
+  - `'unknown'`
 - Optional Primitives
   - `'string?'`
   - `'number?'`
   - `'boolean?'`
+  - `'any?'`
+  - `'unknown?'`
 - A single element tuple with a primitive or an object which represents an array
   - `[Primitive] | [Object]`
 - An optional array of primitives

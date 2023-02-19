@@ -13,8 +13,8 @@ export type OptionalToPrimitive<T extends OptionalPrimitive> = T extends 'string
   : T extends 'boolean?'
   ? boolean
   : never
-export type OptionalPrimitive = 'string?' | 'number?' | 'boolean?'
-export type Primitive = 'string' | 'number' | 'boolean'
+export type OptionalPrimitive = 'string?' | 'number?' | 'boolean?' | 'any?' | 'unknown?'
+export type Primitive = 'string' | 'number' | 'boolean' | 'any' | 'unknown'
 
 export type Reference =
   | OptionalPrimitive
@@ -35,6 +35,10 @@ export type FromOptional<T extends OptionalPrimitive> = T extends 'string?'
   ? boolean | undefined
   : T extends 'number?'
   ? number | undefined
+  : T extends 'any?'
+  ? any | undefined
+  : T extends 'unknown?'
+  ? unknown | undefined
   : never
 
 export type FromPrimitve<T extends Primitive> = T extends 'string'
@@ -43,6 +47,10 @@ export type FromPrimitve<T extends Primitive> = T extends 'string'
   ? boolean
   : T extends 'number'
   ? number
+  : T extends 'any'
+  ? any
+  : T extends 'unknown'
+  ? unknown
   : never
 
 export type FromTuple<T> = T extends [infer U] | readonly [infer U]

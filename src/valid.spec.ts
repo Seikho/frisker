@@ -231,6 +231,30 @@ const tests: Test[] = [
     input: { bool: [true, false, 'true'] },
     expect: false,
   },
+  {
+    it: 'will validate property using any and unknown',
+    input: { any: { bar: 42 }, unknown: { foo: 84 } },
+    using: { any: 'any', unknown: 'unknown' },
+    expect: true,
+  },
+  {
+    it: 'will invalidate property using any when prop is undefined',
+    input: { unknown: { foo: 84 } },
+    using: { any: 'any', unknown: 'unknown' },
+    expect: false,
+  },
+  {
+    it: 'will invalidate property using unknown when prop is undefined',
+    input: { any: 42 },
+    using: { unknown: 'unknown' },
+    expect: false,
+  },
+  {
+    it: 'will validate property using any? and unknown? when props are undefined',
+    input: { empty: true },
+    using: { unknown: 'unknown?', any: 'any?' },
+    expect: true,
+  },
 ]
 
 describe('validation tests', () => {
