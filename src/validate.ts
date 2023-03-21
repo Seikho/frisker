@@ -81,6 +81,7 @@ export function validateBody<T extends Validator>(
         continue start
       }
 
+      if (innerType === 'any') continue
       for (const tupleValue of value) {
         if (typeof tupleValue === innerType) continue
 
@@ -103,6 +104,7 @@ export function validateBody<T extends Validator>(
         continue start
       }
 
+      if (actual === 'any') continue
       for (const tupleValue of value) {
         if (typeof tupleValue === actual) continue
 

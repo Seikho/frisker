@@ -255,6 +255,30 @@ const tests: Test[] = [
     using: { unknown: 'unknown?', any: 'any?' },
     expect: true,
   },
+  {
+    it: 'will validate property using array of any',
+    input: { any: [{ one: '1' }] },
+    using: { any: ['any'] },
+    expect: true,
+  },
+  {
+    it: 'will invalidate property using array of any and value undefined',
+    input: { any: undefined },
+    using: { any: ['any'] },
+    expect: false,
+  },
+  {
+    it: 'will validate property using array of optional any when value undefined',
+    input: { any: undefined },
+    using: { any: ['any?'] },
+    expect: true,
+  },
+  {
+    it: 'will validate property using array of optional any when value provided',
+    input: { any: [1, { foo: 42 }] },
+    using: { any: ['any?'] },
+    expect: true,
+  },
 ]
 
 describe('validation tests', () => {
