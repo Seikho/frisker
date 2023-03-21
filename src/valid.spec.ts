@@ -238,6 +238,12 @@ const tests: Test[] = [
     expect: true,
   },
   {
+    it: 'will validate property using optional any and optional unknown',
+    input: { any: { bar: 42 }, unknown: { foo: 84 } },
+    using: { any: 'any?', unknown: 'unknown?' },
+    expect: true,
+  },
+  {
     it: 'will invalidate property using any when prop is undefined',
     input: { unknown: { foo: 84 } },
     using: { any: 'any', unknown: 'unknown' },

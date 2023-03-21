@@ -69,6 +69,7 @@ export function validateBody<T extends Validator>(
       if (value === undefined) continue
 
       const actual = bodyType.slice(0, -1)
+      if (actual === 'any' || actual === 'unknown') continue
       if (typeof value !== actual)
         errors.push(`.${prop} is ${typeof value}, expected ${actual} or undefined`)
       continue
@@ -81,7 +82,7 @@ export function validateBody<T extends Validator>(
         continue start
       }
 
-      if (innerType === 'any') continue
+      if (innerType === 'any' || innerType === 'unknown') continue
       for (const tupleValue of value) {
         if (typeof tupleValue === innerType) continue
 
@@ -104,7 +105,7 @@ export function validateBody<T extends Validator>(
         continue start
       }
 
-      if (actual === 'any') continue
+      if (actual === 'any' || actual === 'unknown') continue
       for (const tupleValue of value) {
         if (typeof tupleValue === actual) continue
 
