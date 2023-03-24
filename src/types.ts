@@ -14,7 +14,7 @@ export type OptionalToPrimitive<T extends OptionalPrimitive> = T extends 'string
   ? boolean
   : never
 export type OptionalPrimitive = 'string?' | 'number?' | 'boolean?' | 'any?' | 'unknown?'
-export type Primitive = 'string' | 'number' | 'boolean' | 'any' | 'unknown'
+export type Primitive = 'string' | 'number' | 'boolean' | 'any' | 'unknown' | '?'
 
 export type Reference =
   | OptionalPrimitive
@@ -22,12 +22,17 @@ export type Reference =
   | readonly [Primitive]
   | [Primitive]
   | readonly [Validator]
+  | readonly [Validator, '?']
   | [Validator]
+  | [Validator, '?']
   | Validator
   | [...string[]]
   | readonly [...string[]]
 
-export type Validator = { [key: string]: Reference }
+export type Validator =
+  | { [key: string]: Reference }
+  | ({ [key: string]: Reference } & OptionalMarker)
+export type OptionalMarker = { readonly '?': '?' } | { '?': '?' }
 
 export type FromOptional<T extends OptionalPrimitive> = T extends 'string?'
   ? string | undefined
@@ -53,9 +58,15 @@ export type FromPrimitve<T extends Primitive> = T extends 'string'
   ? unknown
   : never
 
-export type FromTuple<T> = T extends [infer U] | readonly [infer U]
+export type FromTuple<T> = T extends
+  | [infer U]
+  | readonly [infer U]
+  | [infer U, '?']
+  | readonly [infer U, '?']
   ? U extends Primitive
-    ? Array<FromPrimitve<U>>
+    ? T extends [U, '?'] | readonly [U, '?']
+      ? Array<FromPrimitve<U>> | undefined
+      : Array<FromPrimitve<U>>
     : never
   : never
 
@@ -65,9 +76,11 @@ export type FromOptionalTuple<T> = T extends [infer U] | readonly [infer U]
     : never
   : never
 
-export type FromTupleBody<T> = T extends [infer U]
+export type FromTupleBody<T> = T extends [infer U, infer O]
   ? U extends Validator
-    ? Array<UnwrapBody<U>>
+    ? O extends '?'
+      ? Array<UnwrapBody<U>> | undefined
+      : Array<UnwrapBody<U>>
     : never
   : T extends readonly [infer U]
   ? U extends Validator
@@ -75,18 +88,26 @@ export type FromTupleBody<T> = T extends [infer U]
     : never
   : never
 
-export type UnwrapBody<T extends { [key: string]: Reference }> = {
-  -readonly [key in keyof T]: T[key] extends Primitive
-    ? FromPrimitve<T[key]>
-    : T[key] extends OptionalPrimitive
-    ? FromOptional<T[key]>
-    : T[key] extends [Primitive] | readonly [Primitive]
-    ? FromTuple<T[key]>
-    : T[key] extends [OptionalPrimitive] | readonly [OptionalPrimitive]
-    ? FromOptionalTuple<T[key]>
-    : T[key] extends [Validator] | readonly [Validator]
-    ? FromTupleBody<T[key]>
-    : T[key] extends Validator
-    ? UnwrapBody<T[key]>
-    : FromTupleLiteral<T[key]>
-}
+export type UnwrapBody<T extends Validator> = T extends OptionalMarker
+  ? UnwrapBody<Omit<T, '?'>> | undefined
+  : {
+      -readonly [key in keyof T]: key extends '?'
+        ? never
+        : T[key] extends Primitive
+        ? FromPrimitve<T[key]>
+        : T[key] extends OptionalPrimitive
+        ? FromOptional<T[key]>
+        : T[key] extends [Primitive, '?'] | readonly [Primitive, '?']
+        ? FromTuple<T[key]>
+        : T[key] extends [Primitive] | readonly [Primitive]
+        ? FromTuple<T[key]>
+        : T[key] extends [OptionalPrimitive] | readonly [OptionalPrimitive]
+        ? FromOptionalTuple<T[key]>
+        : T[key] extends [Validator] | readonly [Validator]
+        ? FromTupleBody<T[key]>
+        : T[key] extends Validator & { '?': any }
+        ? UnwrapBody<T[key]> | undefined
+        : T[key] extends Validator
+        ? UnwrapBody<T[key]>
+        : FromTupleLiteral<T[key]>
+    }

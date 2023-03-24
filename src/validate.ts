@@ -1,5 +1,7 @@
-import { UnwrapBody, Validator } from './types'
+import { OptionalMarker, UnwrapBody, Validator } from './types'
 import {
+  isObjectOptional,
+  isOptionalArray,
   isOptionalPrimitive,
   isPrimitive,
   isTupleBody,
@@ -13,7 +15,7 @@ export function isValid<T extends Validator>(type: T, compare: any): compare is 
   return errors.length === 0
 }
 
-export function assertValid<T extends Validator>(
+export function assertValid<T extends Validator & OptionalMarker>(
   type: T,
   compare: any,
   partial?: boolean
@@ -40,12 +42,16 @@ export function validateBody<T extends Validator>(
   const prefix = opts.prefix ? `${opts.prefix}.` : ''
   const errors: string[] = []
 
+  if (!compare && '?' in type && (type as any)['?'] === '?') {
+    return errors
+  }
+
   start: for (const key in type) {
     const prop = `${prefix}${key}`
     const bodyType = type[key]
     let value
     try {
-      value = compare[key]
+      value = compare?.[key]
     } catch (ex: any) {
       throw new Error(`${ex.message}: ${prop}`)
     }
@@ -53,11 +59,14 @@ export function validateBody<T extends Validator>(
     if (value === undefined) {
       if (isOptionalPrimitive(bodyType)) continue
       if (isTupleOptional(bodyType)) continue
+      if (isOptionalArray(bodyType)) continue
+      if (isObjectOptional(bodyType)) continue
+      if (key === '?' && bodyType === '?') continue
       if (!opts.partial) errors.push(`.${prop} is undefined`)
       continue
     }
 
-    if (bodyType === 'any' || bodyType === 'unknown') continue
+    if (bodyType === 'any' || bodyType === 'unknown' || bodyType === '?') continue
 
     if (isPrimitive(bodyType) && typeof value !== bodyType) {
       errors.push(`.${prop} is ${typeof value}, expected ${bodyType}`)
@@ -118,12 +127,14 @@ export function validateBody<T extends Validator>(
     }
 
     if (isTupleBody(bodyType)) {
+      const [innerBody, opt] = bodyType
+      if (!value && opt === '?') continue
+
       if (!Array.isArray(value)) {
         errors.push(`.${prop} is ${typeof value}, expected Array`)
         continue start
       }
 
-      const [innerBody] = bodyType
       for (const tupleValue of value) {
         if (typeof tupleValue !== 'object') {
           errors.push(`.${prop} element contains ${typeof tupleValue}, expected object`)

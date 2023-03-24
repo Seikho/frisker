@@ -285,6 +285,42 @@ const tests: Test[] = [
     using: { any: ['any?'] },
     expect: true,
   },
+  {
+    it: 'will validate input being optional and value is undefined',
+    input: undefined,
+    using: { foo: 'string', '?': '?' },
+    expect: true,
+  },
+  {
+    it: 'will validate input being optional and value is provided',
+    input: { foo: 'abc' },
+    using: { foo: 'string', '?': '?' },
+    expect: true,
+  },
+  {
+    it: 'will validate input being optional and value is not provided',
+    input: { foo: undefined },
+    using: { foo: [{ a: 'string' }, '?'] },
+    expect: true,
+  },
+  {
+    it: 'will not validate input when input is optional, but value is mismatched',
+    input: { b: 42 },
+    using: { a: 'string', '?': '?' },
+    expect: false,
+  },
+  {
+    it: 'will validate input being optional and value is provided',
+    input: { foo: [{ a: 'abc' }] },
+    using: { foo: [{ a: 'string' }, '?'] },
+    expect: true,
+  },
+  {
+    it: 'will not validate when prop is optional object array, but value is mismatch',
+    input: { foo: ['a'] },
+    using: { foo: [{ a: 'string' }, '?'] },
+    expect: false,
+  },
 ]
 
 describe('validation tests', () => {

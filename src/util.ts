@@ -37,9 +37,22 @@ export function isTupleOptional(
   return true
 }
 
-export function isTupleBody(value: any): value is [Validator] | readonly [Validator] {
+export function isOptionalArray(value: any): value is [Validator, '?'] | readonly [Validator, '?'] {
   if (Array.isArray(value) === false) return false
-  if (value.length !== 1) return false
+  if (value.length !== 2) return false
+  return value[1] === '?'
+}
+
+export function isObjectOptional(value: any): value is Validator & { '?': true } {
+  return typeof value === 'object' && '?' in value && value['?'] === true
+}
+
+export function isTupleBody(
+  value: any
+): value is [Validator] | readonly [Validator] | [Validator, '?'] | readonly [Validator, '?'] {
+  if (Array.isArray(value) === false) return false
+  if (value.length !== 1 && value.length !== 2) return false
+  if (value.length === 2) return typeof value[0] === 'object' && value[1] === '?'
   return typeof value[0] === 'object'
 }
 
